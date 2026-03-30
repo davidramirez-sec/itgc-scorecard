@@ -1,0 +1,769 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>ITGC Health Scorecard — by David Ramirez</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<style>
+:root {
+  --navy:        #09192A;
+  --navy-mid:    #102236;
+  --navy-card:   #152D47;
+  --navy-light:  #1C3A58;
+  --gold:        #C9A84C;
+  --gold-dim:    #A8892E;
+  --teal:        #29BFB0;
+  --teal-dim:    #1E9089;
+  --white:       #EDF2F7;
+  --muted:       #6B8FAF;
+  --border:      #1E3A55;
+  --success:     #4CAF7D;
+  --warn:        #E8A838;
+  --danger:      #E05C5C;
+  --font-head:   'DM Serif Display', Georgia, serif;
+  --font-body:   'DM Sans', sans-serif;
+  --font-mono:   'DM Mono', monospace;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  background: var(--navy);
+  color: var(--white);
+  font-family: var(--font-body);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ── HEADER ── */
+header {
+  padding: 18px 40px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid var(--border);
+  background: var(--navy-mid);
+}
+.logo { font-family: var(--font-head); font-size: 20px; color: var(--gold); }
+.logo span { color: var(--teal); font-style: italic; }
+.header-right { font-family: var(--font-mono); font-size: 10px; color: var(--muted); letter-spacing: 1.5px; }
+
+/* ── MAIN STAGE ── */
+.stage {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 20px;
+}
+
+.card {
+  background: var(--navy-mid);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  width: 100%;
+  max-width: 640px;
+  padding: 48px;
+  position: relative;
+  overflow: hidden;
+}
+
+.card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, var(--teal), var(--gold));
+}
+
+/* ── PROGRESS ── */
+.progress-wrap {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 40px;
+}
+.progress-track {
+  flex: 1;
+  height: 3px;
+  background: var(--navy-light);
+  border-radius: 2px;
+  overflow: hidden;
+}
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--teal), var(--gold));
+  border-radius: 2px;
+  transition: width 0.4s ease;
+}
+.progress-label {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--muted);
+  white-space: nowrap;
+  letter-spacing: 1px;
+}
+
+/* ── DOMAIN TAG ── */
+.domain-tag {
+  display: inline-block;
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  padding: 3px 10px;
+  border-radius: 2px;
+  margin-bottom: 16px;
+}
+.tag-la    { background: rgba(41,191,176,.12); color: var(--teal);    border: 1px solid rgba(41,191,176,.3); }
+.tag-cm    { background: rgba(201,168,76,.12);  color: var(--gold);    border: 1px solid rgba(201,168,76,.3); }
+.tag-co    { background: rgba(76,175,125,.12);  color: var(--success); border: 1px solid rgba(76,175,125,.3); }
+
+/* ── QUESTION ── */
+.question-text {
+  font-family: var(--font-head);
+  font-size: 26px;
+  line-height: 1.35;
+  color: var(--white);
+  margin-bottom: 10px;
+}
+.question-sub {
+  font-size: 13px;
+  color: var(--muted);
+  margin-bottom: 36px;
+  line-height: 1.6;
+}
+
+/* ── OPTIONS ── */
+.options { display: flex; flex-direction: column; gap: 10px; }
+.option {
+  background: var(--navy-card);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 16px 20px;
+  cursor: pointer;
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  transition: all .18s;
+  text-align: left;
+}
+.option:hover { border-color: var(--teal); background: var(--navy-light); }
+.option.selected { border-color: var(--teal); background: rgba(41,191,176,.08); }
+.option-key {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--muted);
+  background: var(--navy-light);
+  border: 1px solid var(--border);
+  border-radius: 2px;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  margin-top: 1px;
+  transition: all .18s;
+}
+.option.selected .option-key { background: var(--teal); border-color: var(--teal); color: var(--navy); font-weight: 600; }
+.option-text { font-size: 14px; color: var(--white); line-height: 1.5; }
+.option-sub { font-size: 12px; color: var(--muted); margin-top: 2px; }
+
+/* ── NAV BUTTONS ── */
+.nav { display: flex; justify-content: space-between; align-items: center; margin-top: 36px; }
+.btn {
+  padding: 11px 28px;
+  border-radius: 3px;
+  font-family: var(--font-body);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  border: 1px solid transparent;
+  transition: all .15s;
+  letter-spacing: .3px;
+}
+.btn-primary { background: var(--teal); color: var(--navy); }
+.btn-primary:hover { background: var(--teal-dim); }
+.btn-primary:disabled { opacity: .3; cursor: not-allowed; }
+.btn-ghost { background: none; color: var(--muted); border-color: var(--border); }
+.btn-ghost:hover { color: var(--white); border-color: var(--muted); }
+.btn-gold { background: var(--gold); color: var(--navy); font-weight: 600; }
+.btn-gold:hover { background: var(--gold-dim); }
+
+/* ── INTRO SCREEN ── */
+.intro-screen { text-align: center; }
+.intro-icon { font-size: 48px; margin-bottom: 24px; }
+.intro-title { font-family: var(--font-head); font-size: 36px; color: var(--white); margin-bottom: 8px; }
+.intro-title span { color: var(--gold); font-style: italic; }
+.intro-sub { font-size: 15px; color: var(--muted); margin-bottom: 32px; line-height: 1.7; max-width: 480px; margin-left: auto; margin-right: auto; }
+.intro-domains {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  margin-bottom: 36px;
+  flex-wrap: wrap;
+}
+.intro-domain {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 1.5px;
+  padding: 5px 14px;
+  border-radius: 2px;
+  border: 1px solid var(--border);
+  color: var(--muted);
+}
+.intro-note { font-size: 12px; color: var(--muted); margin-top: 16px; font-style: italic; }
+
+/* ── RESULTS SCREEN ── */
+.results-screen { }
+.results-title { font-family: var(--font-head); font-size: 30px; color: var(--white); margin-bottom: 4px; }
+.results-sub { font-size: 13px; color: var(--muted); margin-bottom: 32px; }
+
+.overall-score {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  background: var(--navy-card);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 24px;
+  margin-bottom: 24px;
+}
+.score-ring {
+  position: relative;
+  width: 90px;
+  height: 90px;
+  flex-shrink: 0;
+}
+.score-ring svg { transform: rotate(-90deg); }
+.score-ring-bg { fill: none; stroke: var(--navy-light); stroke-width: 6; }
+.score-ring-fill { fill: none; stroke-width: 6; stroke-linecap: round; transition: stroke-dashoffset 1s ease; }
+.score-number {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-head);
+  font-size: 22px;
+  color: var(--white);
+}
+.score-info { flex: 1; }
+.score-rating {
+  font-family: var(--font-head);
+  font-size: 22px;
+  margin-bottom: 4px;
+}
+.score-desc { font-size: 13px; color: var(--muted); line-height: 1.6; }
+
+.domain-scores { display: flex; flex-direction: column; gap: 10px; margin-bottom: 24px; }
+.domain-score-row {
+  background: var(--navy-card);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 16px 18px;
+}
+.domain-score-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+.domain-score-name { font-size: 13px; font-weight: 600; color: var(--white); }
+.domain-score-pct { font-family: var(--font-mono); font-size: 12px; }
+.domain-bar-track { height: 5px; background: var(--navy-light); border-radius: 3px; overflow: hidden; margin-bottom: 8px; }
+.domain-bar-fill { height: 100%; border-radius: 3px; transition: width 1s ease; }
+.domain-finding { font-size: 11px; color: var(--muted); line-height: 1.5; }
+
+.remediation {
+  background: var(--navy-card);
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--gold);
+  border-radius: 4px;
+  padding: 18px;
+  margin-bottom: 24px;
+}
+.remediation-title {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 2px;
+  color: var(--gold);
+  margin-bottom: 12px;
+}
+.remediation-item {
+  font-size: 12px;
+  color: var(--muted);
+  padding: 5px 0 5px 14px;
+  position: relative;
+  line-height: 1.5;
+}
+.remediation-item::before { content: '›'; position: absolute; left: 0; color: var(--gold); }
+
+.results-actions { display: flex; gap: 10px; flex-wrap: wrap; }
+
+/* ── ANIMATIONS ── */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.fade-up { animation: fadeUp .3s ease forwards; }
+
+@keyframes slideIn {
+  from { opacity: 0; transform: translateX(20px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+.slide-in { animation: slideIn .25s ease forwards; }
+
+/* ── FOOTER ── */
+footer {
+  padding: 14px 40px;
+  border-top: 1px solid var(--border);
+  background: var(--navy-mid);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.footer-left { font-family: var(--font-mono); font-size: 10px; color: var(--muted); }
+.footer-right { font-family: var(--font-mono); font-size: 10px; color: var(--muted); }
+.footer-right a { color: var(--teal); text-decoration: none; }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">ITGC<span>Score</span></div>
+  <div class="header-right">IT GENERAL CONTROLS HEALTH SCORECARD · v1.0 · DAVID RAMIREZ</div>
+</header>
+
+<div class="stage">
+  <div class="card" id="mainCard">
+    <!-- Content injected by JS -->
+  </div>
+</div>
+
+<footer>
+  <div class="footer-left">ITGCScore v1.0 &nbsp;·&nbsp; SOC 1 / SSAE 18 &nbsp;·&nbsp; 15 controls assessed</div>
+  <div class="footer-right">Built by <span style="color:var(--gold)">David Ramirez</span> &nbsp;·&nbsp; SSCP · CCSP · CySA+ &nbsp;·&nbsp; <a href="mailto:davidramirez.tech@gmail.com">davidramirez.tech@gmail.com</a></div>
+</footer>
+
+<script>
+// ── QUESTIONS ──────────────────────────────────────────────────────────────
+const QUESTIONS = [
+  // LOGICAL ACCESS (5 questions, max 5 pts each = 25)
+  {
+    id: 'la1', domain: 'Logical Access', domainClass: 'tag-la',
+    text: 'How are new user accounts provisioned?',
+    sub: 'This covers the process for granting system access to new employees or contractors.',
+    options: [
+      { key:'A', text:'Formal request and approval workflow', sub:'Tickets, forms, manager sign-off documented', score: 5 },
+      { key:'B', text:'Manager requests verbally or by email', sub:'Requests made informally, not always documented', score: 3 },
+      { key:'C', text:'IT creates accounts on request with no formal approval', sub:'No documented approval trail', score: 1 },
+      { key:'D', text:'No defined process', sub:'Accounts created on an ad hoc basis', score: 0 },
+    ]
+  },
+  {
+    id: 'la2', domain: 'Logical Access', domainClass: 'tag-la',
+    text: 'How often are user access rights reviewed?',
+    sub: 'Periodic access reviews verify that users still need the access they have.',
+    options: [
+      { key:'A', text:'Quarterly or more frequently', sub:'Formal review with manager sign-off', score: 5 },
+      { key:'B', text:'Annually', sub:'Documented review once per year', score: 3 },
+      { key:'C', text:'Only when issues arise', sub:'Reactive, not scheduled', score: 1 },
+      { key:'D', text:'Access is never formally reviewed', sub:'No review process in place', score: 0 },
+    ]
+  },
+  {
+    id: 'la3', domain: 'Logical Access', domainClass: 'tag-la',
+    text: 'What happens to system access when an employee leaves?',
+    sub: 'Timely de-provisioning is one of the most commonly tested SOC 1 controls.',
+    options: [
+      { key:'A', text:'Access removed same day via automated HR integration', sub:'No manual steps required', score: 5 },
+      { key:'B', text:'Access removed within 24–48 hours via IT ticket', sub:'Documented and tracked process', score: 4 },
+      { key:'C', text:'Access removed eventually, no defined timeline', sub:'Depends on someone remembering', score: 1 },
+      { key:'D', text:'No formal off-boarding process for access', sub:'Accounts may remain active', score: 0 },
+    ]
+  },
+  {
+    id: 'la4', domain: 'Logical Access', domainClass: 'tag-la',
+    text: 'Is multi-factor authentication (MFA) enforced?',
+    sub: 'MFA is now a baseline expectation in most SOC 1 control environments.',
+    options: [
+      { key:'A', text:'MFA enforced for all users and all systems', sub:'No exceptions', score: 5 },
+      { key:'B', text:'MFA enforced for privileged and remote users only', sub:'Standard users may not require it', score: 3 },
+      { key:'C', text:'MFA available but not enforced', sub:'Optional for users', score: 1 },
+      { key:'D', text:'MFA not in place', sub:'Password only authentication', score: 0 },
+    ]
+  },
+  {
+    id: 'la5', domain: 'Logical Access', domainClass: 'tag-la',
+    text: 'How are privileged / admin accounts managed?',
+    sub: 'Admin accounts carry elevated risk and require tighter controls than standard user accounts.',
+    options: [
+      { key:'A', text:'Separate named admin accounts, logged and reviewed regularly', sub:'No shared credentials, full audit trail', score: 5 },
+      { key:'B', text:'Admin accounts exist but activity is not regularly reviewed', sub:'Some oversight but not consistent', score: 3 },
+      { key:'C', text:'Shared admin credentials used by multiple staff', sub:'No individual accountability', score: 1 },
+      { key:'D', text:'No distinction between admin and standard accounts', sub:'All users have elevated access', score: 0 },
+    ]
+  },
+
+  // CHANGE MANAGEMENT (5 questions, max 5 pts each = 25)
+  {
+    id: 'cm1', domain: 'Change Management', domainClass: 'tag-cm',
+    text: 'How are changes to production systems requested and approved?',
+    sub: 'Change management controls ensure only authorised, tested changes reach production.',
+    options: [
+      { key:'A', text:'Formal change request, CAB review, documented approval', sub:'Full audit trail in ITSM system', score: 5 },
+      { key:'B', text:'Manager approval required but process is informal', sub:'Approval happens, documentation is inconsistent', score: 3 },
+      { key:'C', text:'Developers can push changes without formal approval', sub:'No approval gate before production', score: 1 },
+      { key:'D', text:'No change management process exists', sub:'Changes made directly to production at will', score: 0 },
+    ]
+  },
+  {
+    id: 'cm2', domain: 'Change Management', domainClass: 'tag-cm',
+    text: 'Are duties separated between those who develop and those who approve changes?',
+    sub: 'Segregation of duties (SoD) prevents one person from both making and approving their own changes.',
+    options: [
+      { key:'A', text:'Strictly enforced — developer cannot approve their own changes', sub:'Documented SoD policy and access controls', score: 5 },
+      { key:'B', text:'Generally followed but exceptions occur', sub:'SoD policy exists but not always enforced', score: 3 },
+      { key:'C', text:'Same person can develop and approve in some cases', sub:'No formal SoD controls', score: 1 },
+      { key:'D', text:'No separation — one person handles everything', sub:'No SoD concept in place', score: 0 },
+    ]
+  },
+  {
+    id: 'cm3', domain: 'Change Management', domainClass: 'tag-cm',
+    text: 'Are changes tested before being deployed to production?',
+    sub: 'Pre-production testing is a foundational change management control.',
+    options: [
+      { key:'A', text:'Mandatory testing in a separate environment with sign-off', sub:'Test results documented before every deployment', score: 5 },
+      { key:'B', text:'Testing happens but results are not always documented', sub:'Informal testing process', score: 3 },
+      { key:'C', text:'Testing is optional or skipped for small changes', sub:'No consistent testing requirement', score: 1 },
+      { key:'D', text:'Changes go directly to production without testing', sub:'No test environment exists', score: 0 },
+    ]
+  },
+  {
+    id: 'cm4', domain: 'Change Management', domainClass: 'tag-cm',
+    text: 'Is there a process for emergency / urgent changes?',
+    sub: 'Emergency changes bypass normal approval timelines and require special controls.',
+    options: [
+      { key:'A', text:'Defined emergency process with retroactive approval and review', sub:'Documented, tracked, and auditable', score: 5 },
+      { key:'B', text:'Emergency changes allowed with verbal approval, documented after', sub:'Some controls but documentation is inconsistent', score: 3 },
+      { key:'C', text:'Emergency changes bypass all controls', sub:'No oversight for urgent changes', score: 1 },
+      { key:'D', text:'No distinction between emergency and normal changes', sub:'All changes treated the same way', score: 0 },
+    ]
+  },
+  {
+    id: 'cm5', domain: 'Change Management', domainClass: 'tag-cm',
+    text: 'How complete are your change records?',
+    sub: 'Change records must be complete for an auditor to rely on them as evidence.',
+    options: [
+      { key:'A', text:'All required fields populated — description, approver, test results, outcome', sub:'Consistent and audit-ready', score: 5 },
+      { key:'B', text:'Most fields completed but some gaps exist', sub:'Generally good but not fully consistent', score: 3 },
+      { key:'C', text:'Minimal information captured per change', sub:'Records exist but are not detailed', score: 1 },
+      { key:'D', text:'Changes are not formally recorded', sub:'No change log or ITSM records', score: 0 },
+    ]
+  },
+
+  // COMPUTER OPERATIONS (5 questions, max 5 pts each = 25)
+  {
+    id: 'co1', domain: 'Computer Operations', domainClass: 'tag-co',
+    text: 'How are system backups managed?',
+    sub: 'Backup controls support availability and recovery — a core SOC 1 concern.',
+    options: [
+      { key:'A', text:'Automated backups with tested recovery procedures and documented results', sub:'RTO/RPO defined, tests completed on schedule', score: 5 },
+      { key:'B', text:'Regular backups taken but recovery is rarely tested', sub:'Backups exist, recovery capability unverified', score: 3 },
+      { key:'C', text:'Backups taken inconsistently', sub:'No reliable schedule or monitoring', score: 1 },
+      { key:'D', text:'No formal backup process', sub:'Data not backed up systematically', score: 0 },
+    ]
+  },
+  {
+    id: 'co2', domain: 'Computer Operations', domainClass: 'tag-co',
+    text: 'How are IT incidents detected and managed?',
+    sub: 'Incident management controls ensure issues are identified, contained, and resolved in a documented way.',
+    options: [
+      { key:'A', text:'Formal incident process with defined severity levels, timelines, and post-incident reviews', sub:'All incidents logged and tracked to resolution', score: 5 },
+      { key:'B', text:'Incidents logged in a ticketing system but process is informal', sub:'No defined severity or escalation path', score: 3 },
+      { key:'C', text:'Incidents handled reactively, minimal documentation', sub:'No consistent process', score: 1 },
+      { key:'D', text:'No incident management process', sub:'Issues resolved informally with no record', score: 0 },
+    ]
+  },
+  {
+    id: 'co3', domain: 'Computer Operations', domainClass: 'tag-co',
+    text: 'How is vulnerability management handled?',
+    sub: 'Timely identification and remediation of vulnerabilities is a key operational control.',
+    options: [
+      { key:'A', text:'Regular scans, risk-ranked findings, tracked remediation with deadlines', sub:'Formal vulnerability management program', score: 5 },
+      { key:'B', text:'Periodic scans but remediation tracking is inconsistent', sub:'Findings identified but follow-up varies', score: 3 },
+      { key:'C', text:'Ad hoc scanning only when prompted by an incident', sub:'No proactive vulnerability program', score: 1 },
+      { key:'D', text:'No vulnerability scanning in place', sub:'Systems not assessed for known vulnerabilities', score: 0 },
+    ]
+  },
+  {
+    id: 'co4', domain: 'Computer Operations', domainClass: 'tag-co',
+    text: 'Are system and security event logs reviewed?',
+    sub: 'Log review is a detective control — it helps identify anomalies and security events.',
+    options: [
+      { key:'A', text:'Centralised logging with automated alerts and regular human review', sub:'SIEM or equivalent in place', score: 5 },
+      { key:'B', text:'Logs collected but reviewed only when an issue is suspected', sub:'Reactive log review only', score: 3 },
+      { key:'C', text:'Some systems log events but no review process exists', sub:'Logs generated but not used', score: 1 },
+      { key:'D', text:'Logging not configured or not enabled', sub:'No audit trail of system activity', score: 0 },
+    ]
+  },
+  {
+    id: 'co5', domain: 'Computer Operations', domainClass: 'tag-co',
+    text: 'Is there a documented business continuity or disaster recovery plan?',
+    sub: 'BCP/DR planning supports the availability objective in a SOC 1 engagement.',
+    options: [
+      { key:'A', text:'Documented BCP/DR plan, tested annually with results recorded', sub:'RTO and RPO defined and validated', score: 5 },
+      { key:'B', text:'BCP/DR plan exists but has not been tested recently', sub:'Plan documented, testing overdue', score: 3 },
+      { key:'C', text:'Informal recovery plan known by IT staff only', sub:'Undocumented, no testing', score: 1 },
+      { key:'D', text:'No BCP or DR plan exists', sub:'No recovery planning in place', score: 0 },
+    ]
+  },
+];
+
+// ── DOMAIN CONFIG ──────────────────────────────────────────────────────────
+const DOMAINS = {
+  'Logical Access':    { max: 25, color: '#29BFB0', barClass: 'fill-la' },
+  'Change Management': { max: 25, color: '#C9A84C', barClass: 'fill-cm' },
+  'Computer Operations':{ max: 25, color: '#4CAF7D', barClass: 'fill-co' },
+};
+
+// ── RATINGS ───────────────────────────────────────────────────────────────
+function getRating(pct) {
+  if (pct >= 85) return { label:'Strong',      color:'#4CAF7D', desc:'Control environment is well-designed and consistently operating. Minor gaps may exist but overall posture is audit-ready.' };
+  if (pct >= 65) return { label:'Moderate',    color:'#E8A838', desc:'Core controls are in place but gaps exist. Remediation recommended before a formal SOC 1 engagement.' };
+  if (pct >= 40) return { label:'Needs Work',  color:'#E07A38', desc:'Significant control weaknesses identified. Substantial remediation effort required before audit readiness.' };
+  return           { label:'High Risk',       color:'#E05C5C', desc:'Critical gaps across multiple domains. A SOC 1 engagement at this stage would likely result in qualified or adverse opinion.' };
+}
+
+function getDomainFinding(domain, pct) {
+  const findings = {
+    'Logical Access': {
+      85: 'Access controls are mature. Ensure quarterly reviews are maintained and MFA exceptions are documented.',
+      65: 'Access review frequency or de-provisioning controls need strengthening before audit.',
+      40: 'Multiple logical access weaknesses. Prioritise MFA enforcement and formal de-provisioning.',
+      0:  'Critical logical access gaps. Immediate remediation required across provisioning, reviews, and admin controls.',
+    },
+    'Change Management': {
+      85: 'Change controls are well-documented. Verify SoD is enforced consistently and emergency changes are tracked.',
+      65: 'Change record completeness or SoD enforcement needs improvement.',
+      40: 'Significant change management gaps. Formalise approval workflows and implement test environment.',
+      0:  'No reliable change management controls. High risk of unauthorised changes reaching production.',
+    },
+    'Computer Operations': {
+      85: 'Operations controls are strong. Ensure BCP/DR testing is on schedule and vulnerability SLAs are met.',
+      65: 'Backup testing or incident management process needs formalising.',
+      40: 'Multiple operational weaknesses. Prioritise backup testing and incident response documentation.',
+      0:  'Critical operational gaps. No reliable recovery or monitoring capability identified.',
+    },
+  };
+  const thresholds = [85, 65, 40, 0];
+  const key = thresholds.find(t => pct >= t);
+  return findings[domain][key];
+}
+
+// ── STATE ──────────────────────────────────────────────────────────────────
+let currentQ = -1; // -1 = intro
+let answers = {};
+
+// ── RENDER ─────────────────────────────────────────────────────────────────
+function render() {
+  const card = document.getElementById('mainCard');
+  if (currentQ === -1) { renderIntro(card); return; }
+  if (currentQ >= QUESTIONS.length) { renderResults(card); return; }
+  renderQuestion(card);
+}
+
+function renderIntro(card) {
+  card.innerHTML = `
+    <div class="intro-screen fade-up">
+      <div class="intro-icon">📋</div>
+      <div class="intro-title">ITGC <span>Health Check</span></div>
+      <p class="intro-sub">15 questions across the three core SOC 1 domains. Takes about 3 minutes. Get a scored report card with remediation priorities at the end.</p>
+      <div class="intro-domains">
+        <span class="intro-domain">Logical Access</span>
+        <span class="intro-domain">Change Management</span>
+        <span class="intro-domain">Computer Operations</span>
+      </div>
+      <button class="btn btn-gold" onclick="startQuiz()" style="padding:14px 40px;font-size:15px">Start Assessment →</button>
+      <p class="intro-note">No data is stored or transmitted. Everything runs in your browser.</p>
+    </div>`;
+}
+
+function renderQuestion(card) {
+  const q = QUESTIONS[currentQ];
+  const pct = Math.round(((currentQ) / QUESTIONS.length) * 100);
+  const selected = answers[q.id];
+
+  card.innerHTML = `
+    <div class="slide-in">
+      <div class="progress-wrap">
+        <div class="progress-track"><div class="progress-fill" style="width:${pct}%"></div></div>
+        <div class="progress-label">${currentQ + 1} / ${QUESTIONS.length}</div>
+      </div>
+      <span class="domain-tag ${q.domainClass}">${q.domain}</span>
+      <div class="question-text">${q.text}</div>
+      <div class="question-sub">${q.sub}</div>
+      <div class="options">
+        ${q.options.map((o,i) => `
+          <button class="option ${selected === i ? 'selected' : ''}" onclick="selectOption(${i})">
+            <div class="option-key">${o.key}</div>
+            <div>
+              <div class="option-text">${o.text}</div>
+              <div class="option-sub">${o.sub}</div>
+            </div>
+          </button>`).join('')}
+      </div>
+      <div class="nav">
+        <button class="btn btn-ghost" onclick="goBack()" ${currentQ === 0 ? 'style="visibility:hidden"' : ''}>← Back</button>
+        <button class="btn btn-primary" onclick="goNext()" ${selected === undefined ? 'disabled' : ''}>${currentQ === QUESTIONS.length - 1 ? 'See Results →' : 'Next →'}</button>
+      </div>
+    </div>`;
+}
+
+function renderResults(card) {
+  // Calculate scores
+  const domainScores = {};
+  Object.keys(DOMAINS).forEach(d => domainScores[d] = 0);
+
+  QUESTIONS.forEach(q => {
+    const ansIdx = answers[q.id];
+    if (ansIdx !== undefined) {
+      domainScores[q.domain] += q.options[ansIdx].score;
+    }
+  });
+
+  const totalScore = Object.values(domainScores).reduce((a,b) => a+b, 0);
+  const totalMax = 75;
+  const totalPct = Math.round((totalScore / totalMax) * 100);
+  const rating = getRating(totalPct);
+
+  // Circumference for ring
+  const r = 38;
+  const circ = 2 * Math.PI * r;
+  const offset = circ - (totalPct / 100) * circ;
+
+  // Build remediation list
+  const remediations = [];
+  Object.entries(domainScores).forEach(([domain, score]) => {
+    const pct = Math.round((score / DOMAINS[domain].max) * 100);
+    if (pct < 85) remediations.push({ domain, pct, finding: getDomainFinding(domain, pct) });
+  });
+  remediations.sort((a,b) => a.pct - b.pct);
+
+  card.innerHTML = `
+    <div class="results-screen fade-up">
+      <div class="results-title">Your ITGC Report Card</div>
+      <div class="results-sub">Based on ${QUESTIONS.length} control assessments across 3 SOC 1 domains</div>
+
+      <div class="overall-score">
+        <div class="score-ring">
+          <svg width="90" height="90" viewBox="0 0 90 90">
+            <circle class="score-ring-bg" cx="45" cy="45" r="${r}"/>
+            <circle class="score-ring-fill" cx="45" cy="45" r="${r}"
+              stroke="${rating.color}"
+              stroke-dasharray="${circ}"
+              stroke-dashoffset="${offset}"/>
+          </svg>
+          <div class="score-number">${totalPct}%</div>
+        </div>
+        <div class="score-info">
+          <div class="score-rating" style="color:${rating.color}">${rating.label}</div>
+          <div class="score-desc">${rating.desc}</div>
+        </div>
+      </div>
+
+      <div class="domain-scores">
+        ${Object.entries(domainScores).map(([domain, score]) => {
+          const pct = Math.round((score / DOMAINS[domain].max) * 100);
+          const col = DOMAINS[domain].color;
+          const r2 = getRating(pct);
+          return `
+            <div class="domain-score-row">
+              <div class="domain-score-header">
+                <div class="domain-score-name">${domain}</div>
+                <div class="domain-score-pct" style="color:${col}">${pct}% &nbsp;<span style="color:var(--muted);font-size:10px">${score}/${DOMAINS[domain].max}</span></div>
+              </div>
+              <div class="domain-bar-track">
+                <div class="domain-bar-fill" style="width:${pct}%;background:${col}"></div>
+              </div>
+              <div class="domain-finding">${getDomainFinding(domain, pct)}</div>
+            </div>`;
+        }).join('')}
+      </div>
+
+      ${remediations.length ? `
+      <div class="remediation">
+        <div class="remediation-title">PRIORITY REMEDIATION ACTIONS</div>
+        ${remediations.map(r3 => `
+          <div class="remediation-item"><strong style="color:var(--white)">${r3.domain}</strong> — ${r3.finding}</div>
+        `).join('')}
+      </div>` : `
+      <div class="remediation" style="border-left-color:var(--success)">
+        <div class="remediation-title" style="color:var(--success)">AUDIT READINESS</div>
+        <div class="remediation-item" style="color:var(--white)">Strong control posture across all three domains. Maintain current controls and ensure evidence is consistently documented for auditor review.</div>
+      </div>`}
+
+      <div class="results-actions">
+        <button class="btn btn-primary" onclick="restart()">Retake Assessment</button>
+        <button class="btn btn-ghost" onclick="exportResults(${totalPct}, ${JSON.stringify(domainScores)})">Export Summary</button>
+      </div>
+
+      <p style="font-size:11px;color:var(--muted);margin-top:20px;line-height:1.6;font-style:italic">This scorecard is based on self-reported responses and is intended for reference and awareness purposes only. It does not constitute a formal audit opinion, SOC report, or compliance certification.</p>
+    </div>`;
+}
+
+// ── INTERACTIONS ───────────────────────────────────────────────────────────
+function startQuiz() { currentQ = 0; render(); }
+function goBack()    { if (currentQ > 0) { currentQ--; render(); } }
+function goNext()    {
+  const q = QUESTIONS[currentQ];
+  if (answers[q.id] === undefined) return;
+  currentQ++;
+  render();
+}
+
+function selectOption(idx) {
+  const q = QUESTIONS[currentQ];
+  answers[q.id] = idx;
+  render();
+}
+
+function restart() {
+  currentQ = -1;
+  answers = {};
+  render();
+}
+
+function exportResults(totalPct, domainScores) {
+  const lines = [
+    'ITGC Health Scorecard — Export',
+    'Generated by ITGCScore v1.0 — David Ramirez',
+    '---',
+    `Overall Score: ${totalPct}%`,
+    `Rating: ${getRating(totalPct).label}`,
+    '---',
+    'Domain Scores:',
+    ...Object.entries(domainScores).map(([d,s]) =>
+      `  ${d}: ${Math.round((s/DOMAINS[d].max)*100)}% (${s}/${DOMAINS[d].max})`
+    ),
+    '---',
+    'Disclaimer: For reference purposes only. Not a formal audit opinion.',
+  ];
+  const blob = new Blob([lines.join('\n')], { type: 'text/plain' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = 'ITGC_Scorecard_Results.txt'; a.click();
+  URL.revokeObjectURL(url);
+}
+
+// ── INIT ───────────────────────────────────────────────────────────────────
+render();
+</script>
+</body>
+</html>
